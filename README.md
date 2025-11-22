@@ -82,3 +82,9 @@ GET https://madeindreams.com/index.php?route=api/app/getRecipes
   "link": "URL рецепта"
 }
 ```
+
+### Скриншоты
+
+<img width="432" height="885" alt="Снимок экрана 2025-11-22 в 16 34 16" src="https://github.com/user-attachments/assets/60013809-47df-4cc8-91e0-0a60d82528cb" />
+<img width="432" height="885" alt="Снимок экрана 2025-11-22 в 16 33 59" src="https://github.com/user-attachments/assets/d899fb84-5aff-41de-9ce0-92bdc8eceff8" />
+<img width="432" height="885" alt="Снимок экрана 2025-11-22 в 16 34 44" src="https://github.com/user-attachments/assets/44c68856-90fc-4ef3-87d1-e3314d498186" />

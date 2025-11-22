@@ -1,25 +1,38 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'package:hive/hive.dart';
 import '../models/recipe.dart';
 
 class LocalDataSource {
   static const String _boxName = 'app_box';
+  static const String _recipesKey = 'recipes';
 
   Future<void> saveRecipes(List<Recipe> recipes) async {
-    final box = await Hive.openBox<String>(_boxName);
-    final jsonList = recipes.map((r) => recipeToJson(r)).toList();
-    await box.put('recipes', jsonList.toString());
+    try {
+      final box = await Hive.openBox<String>(_boxName);
+      final List<Map<String, dynamic>> jsonList = recipes
+          .map((r) => r.toJson())
+          .toList();
+      await box.put(_recipesKey, jsonEncode(jsonList));
+    } catch (e) {
+      log('Error saving recipes: $e');
+      rethrow;
+    }
   }
 
   Future<List<Recipe>> getRecipes() async {
     try {
       final box = await Hive.openBox<String>(_boxName);
-      final jsonStr = box.get('recipes');
-      
-      if (jsonStr == null) return [];
-      
-      // For now, return empty list - proper JSON parsing would be needed
-      return [];
-    } catch (_) {
+      final jsonStr = box.get(_recipesKey);
+
+      if (jsonStr == null || jsonStr.isEmpty) return [];
+
+      final List<dynamic> jsonList = jsonDecode(jsonStr);
+      return jsonList
+          .map((json) => Recipe.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      log('Error loading recipes: $e');
       return [];
     }
   }
@@ -38,9 +51,9 @@ class LocalDataSource {
     try {
       final box = await Hive.openBox<String>(_boxName);
       final isDarkModeStr = box.get('isDarkMode');
-      
+
       if (isDarkModeStr == null) return false;
-      
+
       return isDarkModeStr == 'true';
     } catch (_) {
       return false;

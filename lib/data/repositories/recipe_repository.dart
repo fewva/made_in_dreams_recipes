@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../datasources/local_data_source.dart';
 import '../datasources/remote_data_source.dart';
@@ -12,25 +14,34 @@ class RecipeRepository {
     required RemoteDataSource remoteDataSource,
     required LocalDataSource localDataSource,
     required Connectivity connectivity,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource,
-        _connectivity = connectivity;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource,
+       _connectivity = connectivity;
 
   Future<List<Recipe>> getRecipes() async {
     try {
-      final connectivityResult = await _connectivity.checkConnectivity();
-      final isOnline = connectivityResult != ConnectivityResult.none;
+      try {
+        final connectivityResult = await _connectivity.checkConnectivity();
+        final isOnline = connectivityResult != ConnectivityResult.none;
 
-      if (isOnline) {
-        final recipes = await _remoteDataSource.getRecipes();
-        await _localDataSource.saveRecipes(recipes);
-        return recipes;
-      } else {
-        return await _localDataSource.getRecipes();
+        if (isOnline) {
+          final recipes = await _remoteDataSource.getRecipes();
+          await _localDataSource.saveRecipes(recipes);
+          return recipes;
+        }
+      } catch (e) {
+        log('Error fetching remote recipes: $e');
       }
+
+      final localRecipes = await _localDataSource.getRecipes();
+      if (localRecipes.isNotEmpty) {
+        return localRecipes;
+      }
+
+      throw Exception('No internet connection and no local data available');
     } catch (e) {
-      // Fallback to local cache on error
-      return await _localDataSource.getRecipes();
+      log('Error in getRecipes: $e');
+      return _localDataSource.getRecipes();
     }
   }
 
